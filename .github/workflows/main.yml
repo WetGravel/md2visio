@@ -1,31 +1,38 @@
-name: Build C# Project
+name: Build md2visio
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main, master ]
   pull_request:
-    branches:
-      - main
+    branches: [ main, master ]
+  workflow_dispatch:  # 允许手动触发工作流
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest  # 使用Windows运行环境，因为这是C#项目
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
+    - uses: actions/checkout@v2
+    
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '7.0' # 根据你的项目选择 .NET 版本
-
+        dotnet-version: 6.0.x  # 根据项目需要选择合适的.NET版本
+        
     - name: Restore dependencies
       run: dotnet restore
-
-    - name: Build project
-      run: dotnet build --configuration Release
-
-    - name: Run tests
-      run: dotnet test --no-build --verbosity normal
+      
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
+      
+    - name: Test
+      run: dotnet test --no-build --verbosity normal --configuration Release
+      
+    - name: Publish
+      run: dotnet publish --no-build --configuration Release -o publish
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: md2visio
+        path: publish/
